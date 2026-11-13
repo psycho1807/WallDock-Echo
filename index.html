@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <title>WallDock Echo Edition</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #101923;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 { margin: 0; font-size: 30px; }
+    small { color: #78caff; }
+    main {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      padding: 24px;
+      padding-bottom: 110px;
+    }
+    .tile {
+      background: #253747;
+      border: 1px solid #36536b;
+      border-radius: 18px;
+      color: white;
+      padding: 30px 12px;
+      font-size: 22px;
+      cursor: pointer;
+      min-height: 120px;
+    }
+    .tile:active { background: #315776; }
+    nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #1d3042;
+      display: flex;
+      justify-content: space-around;
+      padding: 18px;
+    }
+    nav span { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>WallDock</h1>
+      <small>ECHO EDITION</small>
+    </div>
+    <span id="clock"></span>
+  </header>
+
+  <main>
+    <button class="tile">🏠 Maison</button>
+    <button class="tile">💡 Lumières</button>
+    <button class="tile">🪟 Volets</button>
+    <button class="tile">📷 Caméras</button>
+    <button class="tile">🛡️ Alarme</button>
+    <button class="tile">🌡️ Climatisation</button>
+  </main>
+
+  <nav>
+    <span>🏠</span>
+    <span>📷</span>
+    <span>📅</span>
+    <span>🎵</span>
+    <span>⚙️</span>
+  </nav>
+
+  <script>
+    function updateClock() {
+      document.getElementById("clock").textContent =
+        new Date().toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
+
