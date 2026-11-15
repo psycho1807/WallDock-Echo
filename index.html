@@ -60,13 +60,19 @@ input{width:100%;padding:13px;background:#081b2b;color:#fff;border:1px solid #50
 <p class="help">Indique l'adresse HTTPS de ton Home Assistant (par exemple ton adresse Nabu Casa). WallDock Echo ouvre Home Assistant dans Silk : aucune clé ni mot de passe n'est enregistré ici. Les pages d'entités nécessitent un compte Home Assistant autorisé.</p>
 <label for="haUrl">Adresse Home Assistant</label>
 <input id="haUrl" type="url" inputmode="url" placeholder="https://exemple.ui.nabu.casa" autocomplete="url">
-<p class="help">Les chemins des tableaux de bord et des entités peuvent varier selon ta configuration. La page Maison est le point d'entrée recommandé.</p>
+<p class="help">Personnalise les chemins des vues Home Assistant. Exemple : /lovelace/lumieres. Vide = chemin par défaut.</p><div id="routeSettings"></div>
 <div class="buttons"><button class="action" type="button" id="cancelBtn">Annuler</button><button class="action" type="button" id="saveBtn">Enregistrer</button></div>
 </dialog>
 <script>
 (function(){
 'use strict';
 var storageKey='walldock_echo_ha_url';
+var routeKey='walldock_echo_routes';
+var routes=[['Maison','/lovelace/0'],['Lumières','/config/entities?filter=light.'],['Volets','/config/entities?filter=cover.'],['Caméras','/config/entities?filter=camera.'],['Alarme','/config/entities?filter=alarm_control_panel.'],['Climatisation','/config/entities?filter=climate.'],['Calendrier','/calendar']];
+function getRoutes(){try{return JSON.parse(localStorage.getItem(routeKey)||'{}')||{};}catch(e){return {};}}
+function validPath(path){return path.charAt(0)==='/'&&path.charAt(1)!=='/'&&!/[\\<>\s]/.test(path);}
+var routeFields=document.getElementById('routeSettings');
+routes.forEach(function(route){var label=document.createElement('label');label.textContent=route[0];var field=document.createElement('input');field.type='text';field.placeholder=route[1];field.setAttribute('data-route',route[1]);routeFields.appendChild(label);routeFields.appendChild(field);});
 var clock=document.getElementById('clock');
 var date=document.getElementById('date');
 var status=document.getElementById('status');
@@ -77,15 +83,19 @@ refreshTime();setInterval(refreshTime,30000);
 function getUrl(){try{return localStorage.getItem(storageKey)||'';}catch(e){return '';}}
 function setUrl(value){try{localStorage.setItem(storageKey,value);return true;}catch(e){return false;}}
 function updateStatus(){status.textContent=getUrl()?'Home Assistant configuré':'Configure Home Assistant pour commencer';}
-function showSettings(){input.value=getUrl();if(typeof modal.showModal==='function')modal.showModal();else modal.setAttribute('open','');}
+function showSettings(){input.value=getUrl();var saved=getRoutes();routeFields.querySelectorAll('input').forEach(function(field){field.value=saved[field.getAttribute('data-route')]||'';});if(typeof modal.showModal==='function')modal.showModal();else modal.setAttribute('open','');}
 function hideSettings(){if(typeof modal.close==='function')modal.close();else modal.removeAttribute('open');}
-function navigate(path){var base=getUrl();if(!base){showSettings();return;}window.location.assign(base+path);}
+function navigate(path){var base=getUrl();if(!base){showSettings();return;}var saved=getRoutes();var chosen=saved[path];window.location.assign(base+(typeof chosen==='string'&&validPath(chosen)?chosen:path));}
 document.querySelectorAll('[data-path]').forEach(function(button){button.addEventListener('click',function(){navigate(button.getAttribute('data-path'));});});
 document.getElementById('settingsBtn').addEventListener('click',showSettings);
 document.getElementById('cancelBtn').addEventListener('click',hideSettings);
 document.getElementById('saveBtn').addEventListener('click',function(){
 var value=input.value.trim().replace(/\/+$/,'');
 try{var parsed=new URL(value);if(parsed.protocol!=='https:'&&parsed.protocol!=='http:')throw Error('protocole');if(parsed.username||parsed.password||parsed.search||parsed.hash||parsed.pathname!=='/')throw Error('adresse');if(parsed.protocol==='http:'&&!/^(localhost|127\.0\.0\.1|\[::1\]|[\w.-]+\.local|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/.test(parsed.hostname))throw Error('http');value=parsed.origin;}catch(e){status.textContent='Adresse invalide : utilise une URL Home Assistant HTTPS (ou HTTP local).';return;}
+var chosen={};var invalid=false;
+routeFields.querySelectorAll('input').forEach(function(field){var path=field.value.trim();if(path){if(!validPath(path))invalid=true;else chosen[field.getAttribute('data-route')]=path;}});
+if(invalid){status.textContent='Chemin invalide : commence par / et évite les espaces';return;}
+try{localStorage.setItem(routeKey,JSON.stringify(chosen));}catch(e){status.textContent='Stockage des vues indisponible';return;}
 if(!setUrl(value)){status.textContent='Stockage local indisponible dans Silk';return;}
 hideSettings();updateStatus();
 });
