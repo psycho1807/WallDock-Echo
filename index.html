@@ -1,246 +1,101 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101923">
-  <title>WallDock Echo Edition</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      width: 100%;
-      min-height: 100%;
-      margin: 0;
-      background: #101923;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-    }
-
-    header {
-      padding: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 30px;
-    }
-
-    small {
-      color: #78caff;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    #clock {
-      font-size: 25px;
-      font-weight: bold;
-    }
-
-    #fullscreenBtn {
-      padding: 14px 20px;
-      background: #253747;
-      border: 1px solid #45627a;
-      border-radius: 12px;
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
-    }
-
-    main {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      padding: 24px;
-      padding-bottom: 110px;
-    }
-
-    .tile {
-      background: #253747;
-      border: 1px solid #36536b;
-      border-radius: 18px;
-      color: white;
-      padding: 30px 12px;
-      font-size: 22px;
-      cursor: pointer;
-      min-height: 120px;
-    }
-
-    .tile:active {
-      background: #315776;
-    }
-
-    nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: #1d3042;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 18px;
-      z-index: 10;
-    }
-
-    nav span {
-      font-size: 24px;
-    }
-
-    #message {
-      text-align: center;
-      color: #9bb5c9;
-      padding: 10px;
-      font-size: 15px;
-    }
-
-    @media (max-width: 700px) {
-      main {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      header {
-        padding: 16px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      #clock {
-        font-size: 20px;
-      }
-
-      #fullscreenBtn {
-        padding: 10px;
-        font-size: 15px;
-      }
-
-      .tile {
-        font-size: 18px;
-      }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07121e">
+<title>WallDock Echo Edition</title>
+<style>
+:root{color-scheme:dark;font-family:Arial,Helvetica,sans-serif;background:#07121e;color:#eef8ff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 80% 5%,#174564 0%,transparent 42%),linear-gradient(140deg,#07121e,#0b2234 65%,#081521)}
+body{min-height:100vh;min-height:100dvh;padding:clamp(16px,3vw,36px);padding-bottom:100px}
+header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:25px}
+.brand{font-weight:800;font-size:clamp(25px,3vw,42px);letter-spacing:-1px}.brand span{color:#62d5fa}
+.subtitle{font-size:12px;letter-spacing:3px;color:#8bb5cc;margin-top:4px}
+.topright{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-end}
+#clock{font-size:clamp(30px,4vw,52px);font-weight:300;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+.action{border:1px solid #54768b;background:#1b3448;border-radius:12px;padding:12px 16px}
+.hero{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:12px 0 26px}
+.hero h1{font-size:clamp(24px,3vw,40px);margin:0 0 8px}.hero p{margin:0;color:#a7c3d5}
+.status{font-size:13px;color:#8cd8f0}
+main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tile{min-height:145px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;padding:22px;border:1px solid rgba(152,214,243,.22);border-radius:22px;background:linear-gradient(140deg,rgba(65,110,143,.32),rgba(21,47,68,.55));box-shadow:0 10px 30px rgba(0,0,0,.14)}
+.tile:focus-visible,.action:focus-visible{outline:3px solid #71dbff;outline-offset:3px}
+.tile:active{transform:scale(.99)}.emoji{font-size:34px}.tile strong{font-size:23px}.tile small{font-size:13px;color:#9bbcd0}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:10px;padding:12px 16px max(12px,env(safe-area-inset-bottom));background:rgba(7,19,31,.96);border-top:1px solid #244359;z-index:5}
+nav button{background:transparent;border:1px solid transparent;border-radius:12px;padding:10px 22px;font-size:18px}
+nav button:focus-visible,nav button:hover{border-color:#426a84;background:#173249}
+dialog{width:min(530px,calc(100% - 32px));border:1px solid #476b80;border-radius:22px;padding:25px;background:#10283a;color:#eef8ff}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+dialog h2{margin-top:0}label{display:block;margin:14px 0 8px;color:#bed9e8}
+input{width:100%;padding:13px;background:#081b2b;color:#fff;border:1px solid #50718a;border-radius:10px;font:inherit}
+.help{color:#b5cfde;font-size:14px;line-height:1.5}.buttons{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+@media(max-width:750px){main{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{min-height:125px;padding:17px}.tile strong{font-size:19px}.hero{align-items:flex-start;flex-direction:column}nav button{padding:9px 12px}}
+@media(max-width:420px){main{grid-template-columns:1fr}.topright{gap:8px}.action{padding:9px}}
+</style>
 </head>
-
 <body>
-
-  <header>
-    <div>
-      <h1>WallDock</h1>
-      <small>ECHO EDITION</small>
-    </div>
-
-    <div class="header-right">
-      <span id="clock"></span>
-      <button id="fullscreenBtn"
-              onclick="toggleFullscreen()">
-        ⛶ Plein écran
-      </button>
-    </div>
-  </header>
-
-  <main>
-    <button class="tile">🏠 Maison</button>
-    <button class="tile">💡 Lumières</button>
-    <button class="tile">🪟 Volets</button>
-    <button class="tile">📷 Caméras</button>
-    <button class="tile">🛡️ Alarme</button>
-    <button class="tile">🌡️ Climatisation</button>
-  </main>
-
-  <div id="message">
-    WallDock Echo Edition
-  </div>
-
-  <nav>
-    <span>🏠</span>
-    <span>📷</span>
-    <span>📅</span>
-    <span>🎵</span>
-    <span>⚙️</span>
-  </nav>
-
-  <script>
-    function updateClock() {
-      document.getElementById("clock").textContent =
-        new Date().toLocaleTimeString("fr-FR", {
-          hour: "2-digit",
-          minute: "2-digit"
-        });
-    }
-
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    async function toggleFullscreen() {
-      const page = document.documentElement;
-      const button =
-        document.getElementById("fullscreenBtn");
-      const message =
-        document.getElementById("message");
-
-      try {
-        if (document.fullscreenElement) {
-          if (document.exitFullscreen) {
-            await document.exitFullscreen();
-          }
-        } else {
-          const request =
-            page.requestFullscreen ||
-            page.webkitRequestFullscreen;
-
-          if (!request) {
-            throw new Error(
-              "API Fullscreen non disponible"
-            );
-          }
-
-          await request.call(page);
-        }
-
-        message.textContent =
-          "Demande de plein écran envoyée";
-      } catch (error) {
-        message.textContent =
-          "Le navigateur refuse le plein écran";
-      }
-
-      updateFullscreenButton();
-    }
-
-    function updateFullscreenButton() {
-      const button =
-        document.getElementById("fullscreenBtn");
-
-      button.textContent =
-        document.fullscreenElement
-          ? "⛶ Quitter"
-          : "⛶ Plein écran";
-    }
-
-    document.addEventListener(
-      "fullscreenchange",
-      updateFullscreenButton
-    );
-  </script>
-
+<header>
+<div><div class="brand">Wall<span>Dock</span></div><div class="subtitle">ECHO EDITION</div></div>
+<div class="topright"><div id="clock" aria-label="Heure"></div><button class="action" id="fullscreenBtn" type="button">⛶ Plein écran</button></div>
+</header>
+<section class="hero"><div><h1>Bienvenue à la maison</h1><p id="date"></p></div><div class="status" id="status" role="status">Configure Home Assistant pour commencer</div></section>
+<main id="tiles">
+<button class="tile" data-path="/lovelace/0"><span class="emoji">🏠</span><strong>Maison</strong><small>Tableau de bord</small></button>
+<button class="tile" data-path="/config/entities?filter=light."><span class="emoji">💡</span><strong>Lumières</strong><small>Entités Home Assistant</small></button>
+<button class="tile" data-path="/config/entities?filter=cover."><span class="emoji">🪟</span><strong>Volets</strong><small>Entités Home Assistant</small></button>
+<button class="tile" data-path="/config/entities?filter=camera."><span class="emoji">📷</span><strong>Caméras</strong><small>Entités Home Assistant</small></button>
+<button class="tile" data-path="/config/entities?filter=alarm_control_panel."><span class="emoji">🛡️</span><strong>Alarme</strong><small>Entités Home Assistant</small></button>
+<button class="tile" data-path="/config/entities?filter=climate."><span class="emoji">🌡️</span><strong>Climatisation</strong><small>Entités Home Assistant</small></button>
+</main>
+<nav aria-label="Navigation">
+<button type="button" data-path="/lovelace/0" aria-label="Maison">🏠</button>
+<button type="button" data-path="/config/entities?filter=camera." aria-label="Caméras">📷</button>
+<button type="button" data-path="/calendar" aria-label="Calendrier">📅</button>
+<button type="button" id="settingsBtn" aria-label="Réglages">⚙️</button>
+</nav>
+<dialog id="settings">
+<h2>Connexion Home Assistant</h2>
+<p class="help">Indique l'adresse HTTPS de ton Home Assistant (par exemple ton adresse Nabu Casa). WallDock Echo ouvre Home Assistant dans Silk : aucune clé ni mot de passe n'est enregistré ici. Les pages d'entités nécessitent un compte Home Assistant autorisé.</p>
+<label for="haUrl">Adresse Home Assistant</label>
+<input id="haUrl" type="url" inputmode="url" placeholder="https://exemple.ui.nabu.casa" autocomplete="url">
+<p class="help">Les chemins des tableaux de bord et des entités peuvent varier selon ta configuration. La page Maison est le point d'entrée recommandé.</p>
+<div class="buttons"><button class="action" type="button" id="cancelBtn">Annuler</button><button class="action" type="button" id="saveBtn">Enregistrer</button></div>
+</dialog>
+<script>
+(function(){
+'use strict';
+var storageKey='walldock_echo_ha_url';
+var clock=document.getElementById('clock');
+var date=document.getElementById('date');
+var status=document.getElementById('status');
+var modal=document.getElementById('settings');
+var input=document.getElementById('haUrl');
+function refreshTime(){var now=new Date();clock.textContent=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});date.textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+refreshTime();setInterval(refreshTime,30000);
+function getUrl(){try{return localStorage.getItem(storageKey)||'';}catch(e){return '';}}
+function setUrl(value){try{localStorage.setItem(storageKey,value);return true;}catch(e){return false;}}
+function updateStatus(){status.textContent=getUrl()?'Home Assistant configuré':'Configure Home Assistant pour commencer';}
+function showSettings(){input.value=getUrl();if(typeof modal.showModal==='function')modal.showModal();else modal.setAttribute('open','');}
+function hideSettings(){if(typeof modal.close==='function')modal.close();else modal.removeAttribute('open');}
+function navigate(path){var base=getUrl();if(!base){showSettings();return;}window.location.assign(base+path);}
+document.querySelectorAll('[data-path]').forEach(function(button){button.addEventListener('click',function(){navigate(button.getAttribute('data-path'));});});
+document.getElementById('settingsBtn').addEventListener('click',showSettings);
+document.getElementById('cancelBtn').addEventListener('click',hideSettings);
+document.getElementById('saveBtn').addEventListener('click',function(){
+var value=input.value.trim().replace(/\/+$/,'');
+try{var parsed=new URL(value);if(parsed.protocol!=='https:'&&parsed.protocol!=='http:')throw Error('protocole');if(parsed.username||parsed.password||parsed.search||parsed.hash||parsed.pathname!=='/')throw Error('adresse');if(parsed.protocol==='http:'&&!/^(localhost|127\.0\.0\.1|\[::1\]|[\w.-]+\.local|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/.test(parsed.hostname))throw Error('http');value=parsed.origin;}catch(e){status.textContent='Adresse invalide : utilise une URL Home Assistant HTTPS (ou HTTP local).';return;}
+if(!setUrl(value)){status.textContent='Stockage local indisponible dans Silk';return;}
+hideSettings();updateStatus();
+});
+var fs=document.getElementById('fullscreenBtn');
+function updateFullscreen(){fs.textContent=(document.fullscreenElement||document.webkitFullscreenElement)?'⛶ Quitter':'⛶ Plein écran';}
+fs.addEventListener('click',function(){var active=document.fullscreenElement||document.webkitFullscreenElement;var fn=active?(document.exitFullscreen||document.webkitExitFullscreen):(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);if(!fn){status.textContent='Silk ne permet pas le plein écran depuis cette page';return;}try{var result=fn.call(active?document:document.documentElement);if(result&&result.catch)result.catch(function(){status.textContent='Plein écran refusé par Silk';});}catch(e){status.textContent='Plein écran refusé par Silk';}});
+document.addEventListener('fullscreenchange',updateFullscreen);
+document.addEventListener('webkitfullscreenchange',updateFullscreen);
+updateStatus();
+})();
+</script>
 </body>
 </html>
