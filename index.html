@@ -23,6 +23,13 @@ main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .tile{min-height:145px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;padding:22px;border:1px solid rgba(152,214,243,.22);border-radius:22px;background:linear-gradient(140deg,rgba(65,110,143,.32),rgba(21,47,68,.55));box-shadow:0 10px 30px rgba(0,0,0,.14)}
 .tile:focus-visible,.action:focus-visible{outline:3px solid #71dbff;outline-offset:3px}
 .tile:active{transform:scale(.99)}.emoji{font-size:34px}.tile strong{font-size:23px}.tile small{font-size:13px;color:#9bbcd0}
+#viewer{position:fixed;inset:0;background:#07121e;z-index:20;display:none;flex-direction:column}
+#viewer.active{display:flex}
+.viewerBar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;background:#112b3d;border-bottom:1px solid #36566b}
+.viewerBar strong{font-size:18px}
+#haFrame{border:0;width:100%;flex:1;background:#07121e}
+.viewerActions{display:flex;gap:8px}
+.viewerNote{font-size:12px;color:#a9c4d4;margin:0;padding:8px 16px;background:#102435}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:10px;padding:12px 16px max(12px,env(safe-area-inset-bottom));background:rgba(7,19,31,.96);border-top:1px solid #244359;z-index:5}
 nav button{background:transparent;border:1px solid transparent;border-radius:12px;padding:10px 22px;font-size:18px}
 nav button:focus-visible,nav button:hover{border-color:#426a84;background:#173249}
@@ -55,12 +62,17 @@ input{width:100%;padding:13px;background:#081b2b;color:#fff;border:1px solid #50
 <button type="button" data-path="/calendar" aria-label="Calendrier">📅</button>
 <button type="button" id="settingsBtn" aria-label="Réglages">⚙️</button>
 </nav>
+<section id="viewer" aria-label="Vue Home Assistant">
+<div class="viewerBar"><strong id="viewerTitle">Home Assistant</strong><div class="viewerActions"><button class="action" type="button" id="externalBtn">↗ Ouvrir dans Silk</button><button class="action" type="button" id="backBtn">⌂ WallDock</button></div></div>
+<p class="viewerNote">Si la vue reste vide, Home Assistant interdit peut-être son affichage intégré. Utilise « Ouvrir dans Silk ».</p>
+<iframe id="haFrame" title="Vue Home Assistant" referrerpolicy="no-referrer" loading="lazy"></iframe>
+</section>
 <dialog id="settings">
 <h2>Connexion Home Assistant</h2>
 <p class="help">Indique l'adresse HTTPS de ton Home Assistant (par exemple ton adresse Nabu Casa). WallDock Echo ouvre Home Assistant dans Silk : aucune clé ni mot de passe n'est enregistré ici. Les pages d'entités nécessitent un compte Home Assistant autorisé.</p>
 <label for="haUrl">Adresse Home Assistant</label>
 <input id="haUrl" type="url" inputmode="url" placeholder="https://exemple.ui.nabu.casa" autocomplete="url">
-<p class="help">Personnalise les chemins des vues Home Assistant. Exemple : /lovelace/lumieres. Vide = chemin par défaut.</p><div id="routeSettings"></div>
+<p class="help">Personnalise les chemins des vues Home Assistant. Exemple : /lovelace/lumieres. Vide = chemin par défaut.</p><div id="routeSettings"></div><label><input id="embeddedMode" type="checkbox" style="width:auto;margin-right:8px" checked>Afficher les vues dans WallDock (expérimental)</label><p class="help">Cette option conserve le bouton de retour WallDock. Certaines installations Home Assistant bloquent l’intégration dans une iframe. Dans ce cas, décoche cette option.</p>
 <div class="buttons"><button class="action" type="button" id="resetRoutesBtn">Réinitialiser les vues</button><button class="action" type="button" id="cancelBtn">Annuler</button><button class="action" type="button" id="saveBtn">Enregistrer</button></div>
 </dialog>
 <script>
@@ -68,6 +80,7 @@ input{width:100%;padding:13px;background:#081b2b;color:#fff;border:1px solid #50
 'use strict';
 var storageKey='walldock_echo_ha_url';
 var routeKey='walldock_echo_routes';
+var embedKey='walldock_echo_embed';
 var routes=[['Maison','/lovelace/0'],['Lumières','/config/entities?filter=light.'],['Volets','/config/entities?filter=cover.'],['Caméras','/config/entities?filter=camera.'],['Alarme','/config/entities?filter=alarm_control_panel.'],['Climatisation','/config/entities?filter=climate.'],['Calendrier','/calendar']];
 function getRoutes(){try{var data=JSON.parse(localStorage.getItem(routeKey)||'{}');return data&&typeof data==='object'&&!Array.isArray(data)?data:{};}catch(e){return {};}}
 function validPath(path){return typeof path==='string'&&path.charAt(0)==='/'&&path.charAt(1)!=='/'&&!/[\\<>\s?#]/.test(path.split('?')[0])&&!/[\\<>\s#]/.test(path);}
@@ -83,11 +96,25 @@ refreshTime();setInterval(refreshTime,30000);
 function getUrl(){try{return localStorage.getItem(storageKey)||'';}catch(e){return '';}}
 function setUrl(value){try{localStorage.setItem(storageKey,value);return true;}catch(e){return false;}}
 function updateStatus(){status.textContent=getUrl()?'Home Assistant configuré':'Configure Home Assistant pour commencer';}
-function showSettings(){input.value=getUrl();var saved=getRoutes();routeFields.querySelectorAll('input').forEach(function(field){field.value=saved[field.getAttribute('data-route')]||'';});if(typeof modal.showModal==='function')modal.showModal();else modal.setAttribute('open','');}
+function showSettings(){input.value=getUrl();document.getElementById('embeddedMode').checked=getEmbed();var saved=getRoutes();routeFields.querySelectorAll('input').forEach(function(field){field.value=saved[field.getAttribute('data-route')]||'';});if(typeof modal.showModal==='function')modal.showModal();else modal.setAttribute('open','');}
 function hideSettings(){if(typeof modal.close==='function')modal.close();else modal.removeAttribute('open');}
-function navigate(path){var base=getUrl();if(!base){showSettings();return;}var saved=getRoutes();var chosen=saved[path];window.location.assign(base+(typeof chosen==='string'&&validPath(chosen)?chosen:path));}
+function getEmbed(){try{return localStorage.getItem(embedKey)!=='false';}catch(e){return false;}}
+var viewer=document.getElementById('viewer');
+var frame=document.getElementById('haFrame');
+var currentUrl='';
+function closeViewer(){viewer.classList.remove('active');frame.removeAttribute('src');currentUrl='';}
+function navigate(path){var base=getUrl();if(!base){showSettings();return;}var saved=getRoutes();var chosen=saved[path];var url=base+(typeof chosen==='string'&&validPath(chosen)?chosen:path);
+if(!getEmbed()){window.location.assign(url);return;}
+currentUrl=url;
+var title=routes.filter(function(route){return route[1]===path;})[0];
+document.getElementById('viewerTitle').textContent=title?title[0]:'Home Assistant';
+viewer.classList.add('active');
+frame.src=url;
+}
 document.querySelectorAll('[data-path]').forEach(function(button){button.addEventListener('click',function(){navigate(button.getAttribute('data-path'));});});
 document.getElementById('settingsBtn').addEventListener('click',showSettings);
+document.getElementById('backBtn').addEventListener('click',closeViewer);
+document.getElementById('externalBtn').addEventListener('click',function(){if(currentUrl)window.location.assign(currentUrl);});
 document.getElementById('cancelBtn').addEventListener('click',hideSettings);
 document.getElementById('resetRoutesBtn').addEventListener('click',function(){routeFields.querySelectorAll('input').forEach(function(field){field.value='';});status.textContent='Vues réinitialisées dans le formulaire : enregistre pour confirmer';});
 document.getElementById('saveBtn').addEventListener('click',function(){
@@ -97,6 +124,7 @@ var chosen={};var invalid=false;
 routeFields.querySelectorAll('input').forEach(function(field){var path=field.value.trim();if(path){if(!validPath(path))invalid=true;else chosen[field.getAttribute('data-route')]=path;}});
 if(invalid){status.textContent='Chemin invalide : commence par / et évite les espaces';return;}
 try{localStorage.setItem(routeKey,JSON.stringify(chosen));}catch(e){status.textContent='Stockage des vues indisponible';return;}
+try{localStorage.setItem(embedKey,document.getElementById('embeddedMode').checked?'true':'false');}catch(e){status.textContent='Stockage des préférences indisponible';return;}
 if(!setUrl(value)){status.textContent='Stockage local indisponible dans Silk';return;}
 hideSettings();updateStatus();
 });
