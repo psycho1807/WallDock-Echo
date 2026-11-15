@@ -72,7 +72,7 @@ input{width:100%;padding:13px;background:#081b2b;color:#fff;border:1px solid #50
 <p class="help">Indique l'adresse HTTPS de ton Home Assistant (par exemple ton adresse Nabu Casa). WallDock Echo ouvre Home Assistant dans Silk : aucune clé ni mot de passe n'est enregistré ici. Les pages d'entités nécessitent un compte Home Assistant autorisé.</p>
 <label for="haUrl">Adresse Home Assistant</label>
 <input id="haUrl" type="url" inputmode="url" placeholder="https://exemple.ui.nabu.casa" autocomplete="url">
-<p class="help">Personnalise les chemins des vues Home Assistant. Exemple : /lovelace/lumieres. Vide = chemin par défaut.</p><div id="routeSettings"></div><label><input id="embeddedMode" type="checkbox" style="width:auto;margin-right:8px" checked>Afficher les vues dans WallDock (expérimental)</label><p class="help">Cette option conserve le bouton de retour WallDock. Certaines installations Home Assistant bloquent l’intégration dans une iframe. Dans ce cas, décoche cette option.</p>
+<p class="help"><strong>Configuration recommandée :</strong> crée dans Home Assistant un tableau de bord WallDock Echo, puis renseigne les chemins de ses vues (exemple : /wall-dock-echo/lumieres). Tu peux ajouter les équipements avec l’éditeur visuel de Home Assistant. Vide = chemin par défaut.</p><div id="routeSettings"></div><label><input id="embeddedMode" type="checkbox" style="width:auto;margin-right:8px">Afficher les vues dans WallDock (expérimental)</label><p class="help">Désactivé par défaut : Silk et Home Assistant peuvent bloquer les vues intégrées. Le mode direct ouvre la vue dans Silk. Utilise le bouton retour du navigateur pour revenir à WallDock.</p>
 <div class="buttons"><button class="action" type="button" id="resetRoutesBtn">Réinitialiser les vues</button><button class="action" type="button" id="cancelBtn">Annuler</button><button class="action" type="button" id="saveBtn">Enregistrer</button></div>
 </dialog>
 <script>
@@ -98,7 +98,7 @@ function setUrl(value){try{localStorage.setItem(storageKey,value);return true;}c
 function updateStatus(){status.textContent=getUrl()?'Home Assistant configuré':'Configure Home Assistant pour commencer';}
 function showSettings(){input.value=getUrl();document.getElementById('embeddedMode').checked=getEmbed();var saved=getRoutes();routeFields.querySelectorAll('input').forEach(function(field){field.value=saved[field.getAttribute('data-route')]||'';});if(typeof modal.showModal==='function')modal.showModal();else modal.setAttribute('open','');}
 function hideSettings(){if(typeof modal.close==='function')modal.close();else modal.removeAttribute('open');}
-function getEmbed(){try{return localStorage.getItem(embedKey)!=='false';}catch(e){return false;}}
+function getEmbed(){try{return localStorage.getItem(embedKey)==='true';}catch(e){return false;}}
 var viewer=document.getElementById('viewer');
 var frame=document.getElementById('haFrame');
 var currentUrl='';
